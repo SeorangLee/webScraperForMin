@@ -8,70 +8,114 @@ from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 import pandas as pd
 import urllib.request 
+import csv
 
 
 
 
-# csvfilePath = 'C:/Users/SierraLee/Study/Croller/croller/croller/list.xls'
-df = pd.read_excel('./list.xlsx')
-modelCodeList = df['판매자상품코드'].tolist()
+
+
 option = Options()
+
+#*IP 막혔을때
 # option.add_argument("--proxy-server=socks5://127.0.0.1:9150")
 # option.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36")
 # option.add_argument("app-version=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36")
-# option.add_argument("disable-infobars")
-# option.add_argument("disable-extensions")
-# #option.add_argument("start-maximized")
-# option.add_argument('disable-gpu')
-# option.add_argument('headless')
 # torexe = os.popen(r'')
+#*브라우저 키지 않고 작동
+option.add_argument("disable-infobars")
+option.add_argument("disable-extensions")
+#option.add_argument("start-maximized")
+option.add_argument('disable-gpu')
+option.add_argument('headless')
+
+
 driver = webdriver.Chrome(r"C:\chromedriver.exe", options=option)
-
-
 driver.implicitly_wait(3)
 driver.get('http://www.enuri.com/')
-sleep(5)
-WebDriverWait(driver, 1000).until(
-  EC.visibility_of_all_elements_located((By.XPATH, """//*[@id="search_keyword"]"""))
-)
 
-elm_search = driver.find_element(By.XPATH, """//*[@id="search_keyword"]""")
+
+#*엑셀에서 상품코드 불러오기
+
+# csvfilePath = 'C:/Users/SierraLee/Study/Croller/croller/croller/list.csv'
+df = pd.read_csv('./list.csv')
+# modelCodeList = ['삼성 냉장고', 'LG 에어컨']
+modelCodeList = df['판매자상품코드'].tolist()
+# print(modelCodeList)
+
+#*상품코드별 최저가 검색 후 Data set 만들기
+
+
+# for i in range(len(modelCodeList)):
+#   data.append([modelCodeList[i]])
+
+#   for p in range(5):
+
+#     data[i].append(p)
+
+# print(data)
 
 
 # for i in range(modelCodeList.len) :
 #   elm_search.send_keys(modelCodeList[i])
 #   btn_search = driver.find_element(By.XPATH, """//*[@id="header-sr"]/div[1]/span[2]""")
 #   btn_search.click()
-#   WebDriverWait(driver, 10).until(
+#   WebDriverWait(driver, 1000).until(
 #     EC.visibility_of_all_elements_located((By.XPATH, """//*[@id="listBodyDiv"]/div[2]/div[1]/div[3]/div[1]"""))
 #   )
 #   html = driver.page_source
 #   soup = BeautifulSoup(html, 'html.parser')
-#   prices = soup.select('.tx--price')
-#   print(len(prices))
+#   prices1 = soup.select('.tx--price')
+#   prices2 = soup.select('.col--price>a>em')
+#   prices = prices1+ prices2
+#   data.append([modelCodeList[i]])
 #   for p in prices: #이 타이밍에서 list 만들고 그 안에서 최저가 찾아서 csv 업로드 필요
-#     print(p.text)
+#     data[i].append(p.text)
 
-elm_search.send_keys(modelCodeList[0])
-btn_search = driver.find_element(By.XPATH, """//*[@id="header-sr"]/div[1]/span[2]""")
-btn_search.click()
-
-
+sleep(5)
 WebDriverWait(driver, 1000).until(
-  EC.visibility_of_all_elements_located((By.XPATH, """//*[@id="listBodyDiv"]/div[2]/div[1]/div[3]/div[1]"""))
+  EC.visibility_of_all_elements_located((By.XPATH, """//*[@id="search_keyword"]"""))
 )
-# prices = soup.select('goods-cont type--list')
-html = driver.page_source
-soup = BeautifulSoup(html, 'html.parser')
-# print(html)
-prices1 = soup.select('.tx--price')
-prices2 = soup.select('.col--price>a>em')
-prices = prices1+ prices2
 
-# print(type(prices2))
 
-print(len(prices))
-for p in prices:
-  print(p.text)
+
+data = []
+print(len(modelCodeList))
+#* for문 여기서 부터 시작
+for i in range(len(modelCodeList)):
+  elm_search = driver.find_element(By.XPATH, """//*[@id="search_keyword"]""")
+  data.append([modelCodeList[i]])
+  elm_search.send_keys(modelCodeList[i])
+
+  btn_search = driver.find_element(By.XPATH, """//*[@id="header-sr"]/div[1]/span[2]""")
+  btn_search.click() 
+
+  WebDriverWait(driver, 1000).until(
+    EC.visibility_of_all_elements_located((By.XPATH, """//*[@id="listBodyDiv"]/div[2]/div[1]/div[3]/div[1]"""))
+  )
+  html = driver.page_source
+  soup = BeautifulSoup(html, 'html.parser')
+  prices1 = soup.select('.tx--price')
+  prices2 = soup.select('.col--price>a>em')
+  prices = prices1+ prices2
+  driver.find_element(By.XPATH, '//*[@id="search_keyword"]').clear()
+  sleep(0.2)
+
+  priceList= []
+  for p in prices :
+    str = (p.text).replace(',', '')
+    priceList.append(int(str))
+
+  minPrice = min(priceList)
+  data[i].append(minPrice)
+
+  print(i+1)
+print(data)
+
+
+f = open('example.csv', 'w', newline='')
+wr = csv.writer(f)
+wr.writerows(data)
+f.close()
 
 
