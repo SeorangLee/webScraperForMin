@@ -44,34 +44,6 @@ modelCodeList = df['판매자상품코드'].tolist()
 # print(modelCodeList)
 
 #*상품코드별 최저가 검색 후 Data set 만들기
-
-
-# for i in range(len(modelCodeList)):
-#   data.append([modelCodeList[i]])
-
-#   for p in range(5):
-
-#     data[i].append(p)
-
-# print(data)
-
-
-# for i in range(modelCodeList.len) :
-#   elm_search.send_keys(modelCodeList[i])
-#   btn_search = driver.find_element(By.XPATH, """//*[@id="header-sr"]/div[1]/span[2]""")
-#   btn_search.click()
-#   WebDriverWait(driver, 1000).until(
-#     EC.visibility_of_all_elements_located((By.XPATH, """//*[@id="listBodyDiv"]/div[2]/div[1]/div[3]/div[1]"""))
-#   )
-#   html = driver.page_source
-#   soup = BeautifulSoup(html, 'html.parser')
-#   prices1 = soup.select('.tx--price')
-#   prices2 = soup.select('.col--price>a>em')
-#   prices = prices1+ prices2
-#   data.append([modelCodeList[i]])
-#   for p in prices: #이 타이밍에서 list 만들고 그 안에서 최저가 찾아서 csv 업로드 필요
-#     data[i].append(p.text)
-
 sleep(5)
 WebDriverWait(driver, 1000).until(
   EC.visibility_of_all_elements_located((By.XPATH, """//*[@id="search_keyword"]"""))
@@ -93,6 +65,9 @@ for i in range(len(modelCodeList)):
   WebDriverWait(driver, 1000).until(
     EC.visibility_of_all_elements_located((By.XPATH, """//*[@id="listBodyDiv"]/div[2]/div[1]/div[3]/div[1]"""))
   )
+
+  except_rental_checkbox = driver.find_element(By.XPATH, '//*[@id="chLPcondition1"]')
+
   html = driver.page_source
   soup = BeautifulSoup(html, 'html.parser')
   prices1 = soup.select('.tx--price')
@@ -104,7 +79,11 @@ for i in range(len(modelCodeList)):
   priceList= []
   for p in prices :
     str = (p.text).replace(',', '')
-    priceList.append(int(str))
+    
+    #* 중고, 렌탈 제외, 카드할인 포함 
+    # if int(str) !=1 : 
+    #   priceList.append(int(str))
+      
 
   minPrice = min(priceList)
   data[i].append(minPrice)
