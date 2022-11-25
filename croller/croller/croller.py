@@ -1,3 +1,4 @@
+from datetime import datetime
 from time import sleep
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -99,8 +100,9 @@ for i in range(len(modelCodeList)):
 
 print(data)
 
-
-f = open('example.csv', 'w', newline='')
+dt_today = datetime.date.today()
+dt_today_str = dt_today.strftime('%y%m%d')
+f = open(dt_today_str+'_prices.csv', 'w', newline='')
 wr = csv.writer(f)
 wr.writerows(data)
 f.close()
